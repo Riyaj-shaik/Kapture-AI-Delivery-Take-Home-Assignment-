@@ -1,0 +1,150 @@
+<svg width="1500" height="980" viewBox="0 0 1500 980" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif">
+  <rect width="1500" height="980" fill="#ffffff"/>
+
+  <text x="750" y="40" font-size="26" font-weight="bold" text-anchor="middle" fill="#1f2937">Kapture Finance — Collections Voicebot: High-Level Architecture</text>
+
+  <!-- Layer labels -->
+  <text x="30" y="90" font-size="15" font-weight="bold" fill="#6b7280">TELEPHONY</text>
+  <text x="330" y="90" font-size="15" font-weight="bold" fill="#6b7280">VAPI ORCHESTRATION (voice pipeline + state machine)</text>
+  <text x="1130" y="90" font-size="15" font-weight="bold" fill="#6b7280">TOOLS / DATA</text>
+
+  <!-- Telephony box -->
+  <rect x="20" y="110" width="220" height="120" rx="10" fill="#eef2ff" stroke="#6366f1" stroke-width="2"/>
+  <text x="130" y="150" font-size="15" text-anchor="middle" fill="#1f2937" font-weight="bold">PSTN / SIP</text>
+  <text x="130" y="172" font-size="13" text-anchor="middle" fill="#374151">Outbound call</text>
+  <text x="130" y="192" font-size="13" text-anchor="middle" fill="#374151">Network overhead</text>
+  <text x="130" y="210" font-size="13" text-anchor="middle" fill="#374151">~200ms</text>
+
+  <!-- STT box -->
+  <rect x="290" y="110" width="220" height="120" rx="10" fill="#ecfeff" stroke="#06b6d4" stroke-width="2"/>
+  <text x="400" y="150" font-size="15" text-anchor="middle" font-weight="bold" fill="#1f2937">STT</text>
+  <text x="400" y="172" font-size="13" text-anchor="middle" fill="#374151">Deepgram Nova-2</text>
+  <text x="400" y="192" font-size="13" text-anchor="middle" fill="#374151">multi / en-IN + hi</text>
+  <text x="400" y="210" font-size="13" text-anchor="middle" fill="#374151">~200ms</text>
+
+  <!-- LLM box -->
+  <rect x="560" y="110" width="240" height="150" rx="10" fill="#fef9c3" stroke="#ca8a04" stroke-width="2"/>
+  <text x="680" y="145" font-size="15" text-anchor="middle" font-weight="bold" fill="#1f2937">Orchestrator LLM</text>
+  <text x="680" y="167" font-size="13" text-anchor="middle" fill="#374151">GPT-4o / Claude Sonnet</text>
+  <text x="680" y="187" font-size="13" text-anchor="middle" fill="#374151">temp 0.1, tool calling</text>
+  <text x="680" y="207" font-size="13" text-anchor="middle" fill="#374151">state machine enforced</text>
+  <text x="680" y="227" font-size="13" text-anchor="middle" fill="#374151">~400ms first byte</text>
+  <text x="680" y="247" font-size="13" text-anchor="middle" fill="#374151">outside orchestrator prompt</text>
+
+  <!-- TTS box -->
+  <rect x="850" y="110" width="220" height="120" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="960" y="150" font-size="15" text-anchor="middle" font-weight="bold" fill="#1f2937">TTS</text>
+  <text x="960" y="172" font-size="13" text-anchor="middle" fill="#374151">ElevenLabs / Cartesia</text>
+  <text x="960" y="192" font-size="13" text-anchor="middle" fill="#374151">natural conversational voice</text>
+  <text x="960" y="210" font-size="13" text-anchor="middle" fill="#374151">~300ms</text>
+
+  <!-- State machine below LLM -->
+  <rect x="560" y="290" width="240" height="90" rx="10" fill="#f3f4f6" stroke="#4b5563" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="680" y="320" font-size="14" text-anchor="middle" font-weight="bold" fill="#1f2937">State Machine</text>
+  <text x="680" y="342" font-size="12" text-anchor="middle" fill="#374151">AUTH_PENDING gate: locked</text>
+  <text x="680" y="360" font-size="12" text-anchor="middle" fill="#374151">until verify_customer succeeds</text>
+
+  <!-- Arrows telephony <-> stt -->
+  <line x1="240" y1="170" x2="290" y2="170" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="290" y1="185" x2="240" y2="185" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- stt -> llm -->
+  <line x1="510" y1="170" x2="560" y2="170" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- llm -> tts -->
+  <line x1="800" y1="170" x2="850" y2="170" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- tts -> telephony (top curve) -->
+  <path d="M 960 110 C 960 40 130 40 130 110" fill="none" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- llm <-> state machine -->
+  <line x1="680" y1="260" x2="680" y2="290" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Tools column -->
+  <rect x="1120" y="110" width="340" height="470" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+  <text x="1290" y="140" font-size="15" text-anchor="middle" font-weight="bold" fill="#1f2937">Mock Webhook Server</text>
+
+  <g font-size="13" fill="#1f4d2b">
+    <rect x="1145" y="160" width="290" height="34" rx="6" fill="#dcfce7"/>
+    <text x="1290" y="182" text-anchor="middle">verify_customer</text>
+
+    <rect x="1145" y="204" width="290" height="34" rx="6" fill="#dcfce7"/>
+    <text x="1290" y="226" text-anchor="middle">get_account_details</text>
+
+    <rect x="1145" y="248" width="290" height="34" rx="6" fill="#dcfce7"/>
+    <text x="1290" y="270" text-anchor="middle">log_promise_to_pay</text>
+
+    <rect x="1145" y="292" width="290" height="34" rx="6" fill="#dcfce7"/>
+    <text x="1290" y="314" text-anchor="middle">send_payment_link</text>
+
+    <rect x="1145" y="336" width="290" height="34" rx="6" fill="#dcfce7"/>
+    <text x="1290" y="358" text-anchor="middle">escalate_to_agent</text>
+
+    <rect x="1145" y="380" width="290" height="34" rx="6" fill="#dcfce7"/>
+    <text x="1290" y="402" text-anchor="middle">mark_disposition</text>
+  </g>
+
+  <text x="1290" y="440" font-size="13" text-anchor="middle" fill="#374151">↓</text>
+  <rect x="1145" y="450" width="290" height="60" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+  <text x="1290" y="475" font-size="13" text-anchor="middle" fill="#1f2937" font-weight="bold">Account DB</text>
+  <text x="1290" y="495" font-size="12" text-anchor="middle" fill="#374151">PII masked in logs</text>
+
+  <rect x="1145" y="520" width="290" height="60" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="1290" y="545" font-size="13" text-anchor="middle" fill="#1f2937" font-weight="bold">Call Logs / Metrics</text>
+  <text x="1290" y="565" font-size="12" text-anchor="middle" fill="#374151">containment, PTP rate, latency</text>
+
+  <!-- llm to tools -->
+  <path d="M 800 200 C 950 200 1000 175 1120 175" fill="none" stroke="#16a34a" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrowgreen)"/>
+  <text x="960" y="255" font-size="12" fill="#16a34a">tool calls (JSON)</text>
+  <path d="M 1120 200 C 1000 235 950 235 800 220" fill="none" stroke="#16a34a" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrowgreen)"/>
+  <text x="960" y="240" font-size="12" fill="#16a34a">tool results</text>
+
+  <!-- Latency budget table -->
+  <text x="30" y="680" font-size="16" font-weight="bold" fill="#1f2937">Per-hop latency budget (target &lt; 1.2s round trip)</text>
+  <g font-size="13" fill="#1f2937">
+    <rect x="30" y="700" width="1060" height="34" fill="#f9fafb" stroke="#d1d5db"/>
+    <text x="45" y="722">Hop</text>
+    <text x="330" y="722">Component</text>
+    <text x="650" y="722">Budget</text>
+    <text x="850" y="722">Notes</text>
+
+    <rect x="30" y="734" width="1060" height="34" fill="#ffffff" stroke="#e5e7eb"/>
+    <text x="45" y="756">Caller → STT</text>
+    <text x="330" y="756">Deepgram Nova-2 streaming</text>
+    <text x="650" y="756">~200ms</text>
+    <text x="850" y="756">Partial + final transcripts</text>
+
+    <rect x="30" y="768" width="1060" height="34" fill="#f9fafb" stroke="#e5e7eb"/>
+    <text x="45" y="790">STT → LLM first token</text>
+    <text x="330" y="790">Orchestrator (tool-aware)</text>
+    <text x="650" y="790">~400ms</text>
+    <text x="850" y="790">Streaming response, low temp</text>
+
+    <rect x="30" y="802" width="1060" height="34" fill="#ffffff" stroke="#e5e7eb"/>
+    <text x="45" y="824">LLM → TTS</text>
+    <text x="330" y="824">ElevenLabs/Cartesia synth</text>
+    <text x="650" y="824">~300ms</text>
+    <text x="850" y="824">Streamed audio chunks</text>
+
+    <rect x="30" y="836" width="1060" height="34" fill="#f9fafb" stroke="#e5e7eb"/>
+    <text x="45" y="858">Network / jitter</text>
+    <text x="330" y="858">SIP trunk + carrier</text>
+    <text x="650" y="858">~200ms</text>
+    <text x="850" y="858">Varies by carrier/region</text>
+
+    <rect x="30" y="870" width="1060" height="34" fill="#eef2ff" stroke="#6366f1"/>
+    <text x="45" y="892" font-weight="bold">Total</text>
+    <text x="330" y="892" font-weight="bold">End-to-end turnaround</text>
+    <text x="650" y="892" font-weight="bold">~1.1s</text>
+    <text x="850" y="892" font-weight="bold">Under 1.2s target</text>
+  </g>
+
+  <text x="30" y="940" font-size="12" fill="#6b7280">Note: tool calls (verify_customer, etc.) add ~100-250ms each and occur inline within the LLM's turn — budgeted separately per state.</text>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#374151"/>
+    </marker>
+    <marker id="arrowgreen" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+</svg>

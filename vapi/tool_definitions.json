@@ -1,0 +1,135 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "verify_customer",
+      "description": "Verifies the caller's identity against the account record using a shared secret (last 4 digits of PAN or year of birth). MUST be called before any debt/EMI/amount information is disclosed. The agent must not proceed to STATE 2 until this tool returns verified:true.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "description": "Internal account identifier for the loan, e.g. ACC-88392"
+          },
+          "verification_code": {
+            "type": "string",
+            "description": "The value the caller provided — last 4 digits of PAN, or 4-digit birth year (e.g. 1995)."
+          },
+          "verification_type": {
+            "type": "string",
+            "enum": ["PAN_LAST4", "DOB_YEAR"],
+            "description": "Which factor the caller supplied, so the server checks against the right field."
+          }
+        },
+        "required": ["account_id", "verification_code", "verification_type"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_account_details",
+      "description": "Fetches the current overdue amount, due date, and DPD for a verified account. Only call this AFTER verify_customer has returned verified:true — never before, and never if verification failed.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "account_id": { "type": "string", "description": "Internal account identifier, e.g. ACC-88392" }
+        },
+        "required": ["account_id"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "log_promise_to_pay",
+      "description": "Records a Promise-to-Pay (PTP) commitment once the customer has agreed to a specific date and amount.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "account_id": { "type": "string" },
+          "ptp_date": {
+            "type": "string",
+            "description": "ISO-8601 date the customer committed to pay by, e.g. 2026-08-21"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Amount the customer committed to pay (INR). Should match the overdue amount unless a partial arrangement was explicitly authorized."
+          },
+          "partial_payment": {
+            "type": "boolean",
+            "description": "True if this is a partial payment arrangement rather than full settlement."
+          }
+        },
+        "required": ["account_id", "ptp_date", "amount"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "send_payment_link",
+      "description": "Sends a payment link to the customer's registered mobile number via SMS and/or WhatsApp. Only call after a PTP has been logged.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "account_id": { "type": "string" },
+          "channel": {
+            "type": "string",
+            "enum": ["SMS", "WhatsApp", "BOTH"]
+          }
+        },
+        "required": ["account_id", "channel"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "escalate_to_agent",
+      "description": "Hands the call off to a human collections agent or the grievance desk. Used for hardship cases, disputes, or when the caller explicitly asks for a human.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "account_id": { "type": "string" },
+          "reason": {
+            "type": "string",
+            "enum": ["HARDSHIP_REQUEST", "DISPUTE", "CUSTOMER_REQUESTED_HUMAN", "ABUSIVE_CALLER", "OTHER"]
+          },
+          "notes": { "type": "string", "description": "Brief free-text context for the receiving agent." }
+        },
+        "required": ["account_id", "reason"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "mark_disposition",
+      "description": "Logs the final outcome of the call. Must be called exactly once, at the end of every call, regardless of path taken.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "account_id": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PTP_AGREED",
+              "ALREADY_PAID",
+              "DISPUTED",
+              "HARDSHIP_ESCALATED",
+              "WRONG_PERSON",
+              "WRONG_NUMBER",
+              "DO_NOT_CALL",
+              "NO_RESPONSE",
+              "VERIFICATION_FAILED",
+              "ABUSIVE_TERMINATED"
+            ]
+          },
+          "notes": { "type": "string" }
+        },
+        "required": ["account_id", "status"]
+      }
+    }
+  }
+]
