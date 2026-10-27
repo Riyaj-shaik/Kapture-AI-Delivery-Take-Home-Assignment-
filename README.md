@@ -75,9 +75,3 @@ Mock verification: account `ACC-88392` (Rahul Sharma) accepts PAN last-4 `1234` 
 - Persist verification/disposition state in a real datastore (Postgres) instead of the in-memory array in `server.js`, and add a `/metrics` endpoint that computes containment rate, PTP rate, and avg latency from the call log.
 - A proper eval harness that runs `tests/test_cases.json` against real Vapi call transcripts (or a text-mode harness hitting the same system prompt) and reports pass/fail automatically, rather than manual review.
 - Expand the intents table to handle partial-payment negotiation more richly (counter-offers, installment plans) with an explicit authorization ceiling enforced in the tool layer, not just the prompt.
-
-## Demo
-
-- Call recording / Loom link: **[add link here after recording the live Vapi demo]**
-- Scenario A (happy path — PTP): greeting → auth → disclosure → PTP → payment link sent → disposition logged.
-- Scenario B (edge case): pick one of already-paid / dispute / wrong-person and show the bot handling it gracefully per `tests/test_cases.json`.
